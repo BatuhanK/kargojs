@@ -20,6 +20,10 @@
     "kargo"
   ],
   "author": "Batuhan KATIRCI <katircib@gmail.com> (http://batuhan.org)",
+  "contributors": [{
+    "name": "Yagiz Nizipli",
+    "email": "yagiznizipli@gmail.com"
+  }],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/BatuhanK/kargo/issues"
