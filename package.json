@@ -1,0 +1,32 @@
+{
+  "name": "kargojs",
+  "version": "0.0.1",
+  "description": "Türkiye Kargo firmalarından rahatça sorgulama yapabilmek için geliştirilen npm modülü.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BatuhanK/kargojs.git"
+  },
+  "keywords": [
+    "kargo",
+    "aras",
+    "kargo",
+    "yurtiçi",
+    "kargo",
+    "ups",
+    "kargo"
+  ],
+  "author": "Batuhan KATIRCI <katircib@gmail.com> (http://batuhan.org)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BatuhanK/kargo/issues"
+  },
+  "homepage": "https://github.com/BatuhanK/kargo#readme",
+  "dependencies": {
+    "async": "^1.4.2",
+    "request": "^2.61.0"
+  }
+}
