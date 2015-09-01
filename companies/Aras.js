@@ -1,7 +1,12 @@
-var Aras = {};
-var request = require('request');
-var async = require('async');
+var Aras = {},
+    request = require('request'),
+    async = require('async');
 
+
+
+/**
+ * @private
+ */
 Aras._delete_null_properties = function(test, recurse) {
     for (var i in test) {
         if (test[i] === null) {
@@ -12,27 +17,36 @@ Aras._delete_null_properties = function(test, recurse) {
     }
 }
 
+
+/**
+ * @private
+ */
 Aras._stripTags = function(str){
     return str.replace(/<(?:.|\n)*?>/gm, '');
 }
+
+
+/**
+ * @private
+ */
 Aras._findAndGetRegex = function(regexPattern,subject){
     var findings = regexPattern.exec(subject);
-    if(!findings)
-        return null;
-    else
-        return Aras._stripTags(findings[1]);
+
+    return !findings ? null : Aras._stripTags(findings[1]);
 }
 
-Aras._getShipmentId = function(query,callback){
-    request("http://kargotakip.araskargo.com.tr/CargoInfoV3.aspx?code=" + String(query) ,function(err,response,body){
-        if(err){
-            return callback(err);
-        }
-        var shipmentIdRegex = /shipmentid=(.*)&amp;/g;
-        var shipmentId = Aras._findAndGetRegex(shipmentIdRegex,body);
 
-        var barcodeRegex = /barcode=(.*)&amp;/g;
-        var barcode = Aras._findAndGetRegex(barcodeRegex,body);
+/**
+ * @private
+ */
+Aras._getShipmentId = function(query,callback){
+    request("http://kargotakip.araskargo.com.tr/CargoInfoV3.aspx?code=" + String(query), function(err,response,body){
+        if (err) return callback(err);
+
+        var shipmentIdRegex = /shipmentid=(.*)&amp;/g,
+            shipmentId = Aras._findAndGetRegex(shipmentIdRegex,body),
+            barcodeRegex = /barcode=(.*)&amp;/g,
+            barcode = Aras._findAndGetRegex(barcodeRegex,body);
 
         if(shipmentId && barcode){
             var idsObject = {
@@ -46,13 +60,16 @@ Aras._getShipmentId = function(query,callback){
     })
 }
 
+
+/**
+ * @private
+ */
 Aras._getCargoDetails = function(shipmentId,callback){
     request("http://kargotakip.araskargo.com.tr/CargoInfoWaybillAndDelivered.aspx?shipmentid=" + String(shipmentId), function(err,response,body){
-        if(err){
-            return callback(err);
-        }
-        var kayitKontrolRegex = /<font face=arial color=red size=2>(.*)<\/font>/g;
-        var kayitKontrol = Aras._findAndGetRegex(kayitKontrolRegex,body);
+        if (err) return callback(err);
+
+        var kayitKontrolRegex = /<font face=arial color=red size=2>(.*)<\/font>/g,
+            kayitKontrol = Aras._findAndGetRegex(kayitKontrolRegex,body);
 
         if(kayitKontrol != null)
             return callback(new Error('Kayıt bulunamadı'));
@@ -134,39 +151,42 @@ Aras._getCargoDetails = function(shipmentId,callback){
     })
 }
 
+
+/**
+ * @private
+ */
 Aras._getMovementDetails = function(barcode,callback){
     request("http://kargotakip.araskargo.com.tr/CargoInfoTransactionAndRedirection.aspx?barcode=" + String(barcode), function(err,response,body){
-        if(err){
-            return callback(err);
-        }
+        if (err) return callback(err);
 
         body = body.replace(/<b>/g, '');
 
-        var tableRegex = /<td>(.{19})<\/td><td>(.*)<\/td><td>(.*)<\/td><td>(.*)<\/td>/g
-        var tableResults = body.match(tableRegex);
+        var tableRegex = /<td>(.{19})<\/td><td>(.*)<\/td><td>(.*)<\/td><td>(.*)<\/td>/g,
+            tableResults = body.match(tableRegex);
 
-        if(!tableResults){
-            return new Error('Taşıma bilgisi bulunamadı');
-        }
-        var parseDetailsRegex = /<td>(.*)<\/td>/g;
-        var movementDetails = [];
+        if(!tableResults) return new Error('Taşıma bilgisi bulunamadı');
+
+        var parseDetailsRegex = /<td>(.*)<\/td>/g,
+            movementDetails = [];
+
         for(var i=0; i<tableResults.length; i++){
             var detailsRaw = tableResults[i].match(/<td>(.*?)<\/td>/g).map(function(val){
                 return val.replace(/<\/?td>/g,'');
             });
-            var details = {
+
+            movementDetails.push({
                 'tarih': detailsRaw[0],
                 'il': detailsRaw[1],
                 'birim': detailsRaw[2],
                 'islem': detailsRaw[3]
-            }
-            movementDetails.push(details);
+            });
         }
         return callback(null,movementDetails);
     });
 }
 
-Aras.query = function(query,callback){
+
+Aras.query = function(query, callback){
     async.waterfall([
         function(cb){
             Aras._getShipmentId(query,cb);
@@ -175,28 +195,28 @@ Aras.query = function(query,callback){
             Aras._getCargoDetails(idsObject.shipmentId,cb);
         }
     ], function(err,results){
-        if(err){
-            return callback(err);
-        } else{
-            return callback(null,results);
-        }
+        if (err) return callback(err);
+
+        callback(null,results);
     })
 }
 
+
 Aras.getMovements = function(query,callback){
     async.waterfall([
-        function(cb){
+        function (cb){
             Aras._getShipmentId(query,cb);
         },
-        function(idsObject,cb){
+        function (idsObject,cb){
             Aras._getMovementDetails(idsObject.barcode,cb);
         }
-    ], function(err,results){
-        if(err){
-            return callback(err);
-        } else{
-            return callback(null,results);
-        }
+    ], function (err, results){
+        if (err) return callback(err);
+
+        callback(null, results);
     })
 }
+
+
+
 module.exports = Aras;
