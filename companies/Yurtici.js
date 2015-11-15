@@ -44,13 +44,13 @@ Yurtici._prepareQuery = function(query){
 
 Yurtici.replace_tr = function(input)
 {
-input = input.replace('@s', 'ş');
-input = input.replace('@i', 'ı');
-input = input.replace('@g', 'ğ');
-input = input.replace('@u', 'ü');
-input = input.replace('@c', 'ç');
-input = input.replace('@o', 'ö');
-return input;
+	input = input.replace('@s', 'ş');
+	input = input.replace('@i', 'ı');
+	input = input.replace('@g', 'ğ');
+	input = input.replace('@u', 'ü');
+	input = input.replace('@c', 'ç');
+	input = input.replace('@o', 'ö');
+	return input;
 }
 Yurtici.query = function(query,callback){
     request({
@@ -61,7 +61,7 @@ Yurtici.query = function(query,callback){
     }, function(error,response,body){
         if (error) return callback(error);
 
-        var responseObj = replace_tr(JSON.parse(body));
+        var responseObj = JSON.parse(Yurtici.replace_tr(body));
 
         if (responseObj.message)
             return callback(new Error(responseObj.message));
@@ -97,7 +97,7 @@ Yurtici.getMovements = function(query,callback){
     }, function(error,response,body){
         if (error) return callback(error);
 
-        var responseObj = replace_tr(JSON.parse(body));
+        var responseObj = JSON.parse(Yurtici.replace_tr(body));
 
         if (responseObj.message)
             return callback(new Error(responseObj.message));
